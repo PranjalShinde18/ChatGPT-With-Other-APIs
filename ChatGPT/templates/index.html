@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Chat App</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/lib/languages/python.min.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/a11y-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+</head>
+
+
+<body>
+  
+  <div class="container mt-5">
+    <h1 style="color:antiquewhite">Chat Bot</h1>
+    <div class="chat-box mt-3">
+      <!-- Chat messages will be added here dynamically -->
+    </div>
+
+
+    <!-- User Input -->
+
+    <div class="form-group mt-3">
+      <textarea class="form-control" rows="3" placeholder="Type your message here" id="message-input"></textarea>
+    </div>
+    <button type="button" class="btn btn-primary" id="send-btn">Send</button>
+
+    <!-- Voice-to-Text button -->
+    <button type="button" id="voice-btn" class="btn-dark"><img class="mic" src="static/images/microphone.png"
+        alt="Voice-to-Text"></button>
+
+    <script>
+      // Voice-to-Text functionality
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.onresult = function (event) {
+        const result = event.results[0][0].transcript;
+        document.getElementById('message-input').value += result;
+        document.getElementById('send-btn').click(); // trigger send button click
+      };
+      document.getElementById('voice-btn').addEventListener('click', function () {
+        recognition.start();
+      });
+    </script>
+
+
+  </div>
+
+  <script>
+    setInterval(highlightAll, 1000);
+    // Function to highlight code using highlight.js library
+    function highlightAll() {
+      document.querySelectorAll("pre code").forEach(block => {
+        hljs.highlightBlock(block);
+      });
+    }
+
+    const chatBox = document.querySelector(".chat-box");
+    const messageInput = document.querySelector("#message-input");
+    const sendBtn = document.querySelector("#send-btn");
+
+    const snd = document.querySelector(".sound");
+
+    var synth;
+    var utterance;
+
+    function addMessage(message, isUserMessage) {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("mt-3", "p-3", "rounded");
+
+      if (isUserMessage) {
+        messageDiv.classList.add("user-message");
+
+      } else {
+        messageDiv.classList.add("bot-message");
+      }
+
+      messageDiv.innerHTML = `
+        <img src="{{ url_for('static', filename='images/user.png') }}" class="user-icon"><p>${message}</p>
+        `;
+
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function displayVideos(videos) {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("mt-3", "p-3", "rounded");
+      messageDiv.classList.add("bot-message");
+
+      const messageContent = document.createElement("div");
+
+      videos.forEach(video => {
+        const videoDiv = document.createElement("div");
+        videoDiv.classList.add("video-container");
+
+        const videoThumbnail = document.createElement("img");
+        videoThumbnail.classList.add("video-thumbnail");
+        videoThumbnail.src = video.thumbnail_url;
+        videoThumbnail.alt = video.title;
+
+        const videoTitle = document.createElement("p");
+        videoTitle.classList.add("video-title");
+        videoTitle.textContent = video.title;
+
+        const videoDescription = document.createElement("p");
+        videoDescription.classList.add("video-description");
+        videoDescription.textContent = video.description;
+
+        const videoLink = document.createElement("a");
+        videoLink.classList.add("video-link");
+        videoLink.href = video.video_url;
+        videoLink.textContent = "Watch Video";
+
+        videoDiv.appendChild(videoThumbnail);
+        videoDiv.appendChild(videoTitle);
+        videoDiv.appendChild(videoDescription);
+        videoDiv.appendChild(videoLink);
+
+        messageContent.appendChild(videoDiv);
+      });
+
+      const messageIcon = document.createElement("img");
+      messageIcon.src = "{{ url_for('static', filename='images/user.png') }}";
+      messageIcon.classList.add("user-icon");
+
+      const messageSpeech = document.createElement("img");
+      messageSpeech.src = "{{ url_for('static', filename='images/volume.png') }}";
+      messageSpeech.classList.add("speech-icon");
+      messageSpeech.addEventListener("click", () => {
+        const speechSynthesis = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(messageContent.textContent);
+        speechSynthesis.speak(utterance);
+      });
+
+      messageDiv.appendChild(messageIcon);
+      messageDiv.appendChild(messageContent);
+      messageDiv.appendChild(messageSpeech);
+
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+
+
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+
+      if (message !== "") {
+        addMessage(message, true);
+
+        if (message.startsWith("search")) {
+          const query = message.split("search ")[1];
+
+          fetch("/api", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message })
+          })
+            .then(response => response.json())
+            .then(data => {
+              const videos = data.videos;
+              if (videos.length > 0) {
+                const videoDiv = document.createElement("div");
+                videoDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
+
+                const videoTitle = document.createElement("h4");
+                videoTitle.textContent = "Videos";
+
+                videoDiv.appendChild(videoTitle);
+
+                videos.forEach(video => {
+                  const videoTitle = document.createElement("p");
+                  videoTitle.textContent = video.title;
+
+                  const videoDescription = document.createElement("p");
+                  videoDescription.textContent = video.description;
+
+                  const videoThumbnail = document.createElement("img");
+                  videoThumbnail.src = video.thumbnail_url;
+
+                  const videoLink = document.createElement("a");
+                  videoLink.href = video.video_url;
+                  videoLink.textContent = "Watch on YouTube";
+
+                  const videoInfo = document.createElement("div");
+                  videoInfo.classList.add("video-info");
+                  videoInfo.appendChild(videoTitle);
+                  videoInfo.appendChild(videoDescription);
+                  videoInfo.appendChild(videoLink);
+
+                  const videoContainer = document.createElement("div");
+                  videoContainer.classList.add("video-container");
+                  videoContainer.appendChild(videoThumbnail);
+                  videoContainer.appendChild(videoInfo);
+
+                  videoDiv.appendChild(videoContainer);
+                });
+
+                chatBox.appendChild(videoDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+              } else {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
+                messageDiv.textContent = "No videos found";
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+              }
+            })
+            .catch(error => console.error(error));
+        } else {
+          fetch("/api", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message })
+          })
+            .then(response => response.json())
+            .then(data => {
+              const messageDiv = document.createElement("div");
+              messageDiv.classList.add("mt-3", "p-3", "rounded", "bot-message");
+              messageDiv.innerHTML = `
+            <img src="{{ url_for('static', filename='images/chatbot.png') }}" class="bot-icon">
+            <p>${data.content}</p>
+            <img src="{{ url_for('static', filename='images/volume.png') }}" class="speech-icon">
+          `;
+              messageDiv.querySelector(".speech-icon").addEventListener("click", () => {
+                const speechSynthesis = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(data.content);
+                speechSynthesis.speak(utterance);
+              });
+              chatBox.appendChild(messageDiv);
+              chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => console.error(error));
+        }
+
+        messageInput.value = "";
+      }
+    }
+
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    messageInput.addEventListener("keydown", event => {
+      if (event.keyCode === 13 && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    },
+
+    );
+
+  </script>
+
+</body>
+
+</html>

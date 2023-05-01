@@ -1,0 +1,91 @@
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  background-color: rgb(7, 7, 7);
+  margin: 0;
+  padding: 0;
+
+  background-image: url('/static/images/bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+
+
+}
+
+.chat-box {
+  height: 450px;
+  overflow: auto;
+  padding: 10px;
+}
+
+.chat-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: antiquewhite;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.chat-message {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.user-message {
+  background-color:#914ca0;
+  color: antiquewhite;
+  font-size: 20px;
+ 
+}
+
+.bot-message {
+  background-color: #c98a1c;
+  color: antiquewhite;
+  font-size: 20px;
+ 
+}
+
+.message-text pre code {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.user-icon {
+  font-size: 20px;
+  margin-right: 10px;  
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+}
+
+.bot-icon {
+  font-size: 20px;
+  margin-right: 10px;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+}
+
+.speech-icon {
+  font-size: 20px;
+  margin-right: 10px;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+}
+
+.mic {
+  padding: auto;
+  font-size: 20px;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+}
+
+img{
+  height: 200px;
+}
