@@ -7,12 +7,12 @@ app = Flask(__name__)
 
 
 # Set up OpenAI API credentials
-openai.api_key = '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'
+openai.api_key = 'OPEN_AI_API_KEY'
 
 
 # Set up YouTube API credentials
 
-youtube_api_key = 'AIzaSyCAvu9qIkGatDJxOHyNDcwrbNcp-aKGXbY'
+youtube_api_key = 'YOUTUBE_API_KEY'
 
 
 youtube = build('youtube', 'v3', developerKey=youtube_api_key)
